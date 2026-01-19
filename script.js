@@ -1,21 +1,22 @@
-      
+// Set global API keys and URLs for external services
+window.CALLAI_API_KEY = "";
+window.CALLAI_CHAT_URL = "https://vibes-diy-api.com/";
+window.CALLAI_IMG_URL = "https://vibes-diy-api.com/";
 
+// Import ReactDOMClient for rendering React components
+import ReactDOMClient from "react-dom/client";
 
-      window.CALLAI_API_KEY = "";
-      window.CALLAI_CHAT_URL = "https://vibes-diy-api.com/";
-      window.CALLAI_IMG_URL = "https://vibes-diy-api.com/";
-
-      import ReactDOMClient from "react-dom/client";
-
-      // prettier-ignore
-      import React, { useState, useEffect, useRef } from "react";
+// Import React and hooks for state management and effects
+import React, { useState, useEffect, useRef } from "react";
 import { useFireproof } from "use-fireproof";
 
 export default function App() {
+  // Initialize Fireproof database and live queries for apps and versions
   const { useLiveQuery, database } = useFireproof("puter-apps-v6");
   const { docs: apps } = useLiveQuery("type", { key: "app", descending: true });
   const { docs: versions } = useLiveQuery("type", { key: "version", descending: true });
-  
+
+  // State variables for user input, app data, UI flags, etc.
   const [prompt, setPrompt] = useState("");
   const [appName, setAppName] = useState("");
   const [appTitle, setAppTitle] = useState("");
@@ -32,8 +33,8 @@ export default function App() {
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
-  
-  // New feature states
+
+  // New feature states for templates, UI tabs, modes, and modals
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -48,13 +49,14 @@ export default function App() {
   const [shareLink, setShareLink] = useState("");
   const [activeTab, setActiveTab] = useState("build");
   const [darkMode, setDarkMode] = useState(() => {
+    // Load dark mode preference from localStorage or default to false
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
   const [activeCategory, setActiveCategory] = useState("All");
   const fileInputRef = useRef(null);
 
-  // Templates
+  // App templates with default prompts and categories
   const templates = [
     { id: "todo", name: "Todo App", icon: "✅", prompt: "A beautiful todo app with categories, priorities, due dates, dark/light mode toggle, and local storage persistence", category: "Productivity" },
     { id: "calculator", name: "Calculator", icon: "🔢", prompt: "A scientific calculator with history, memory functions, keyboard support, and a sleek modern UI", category: "Utilities" },
@@ -70,10 +72,13 @@ export default function App() {
     { id: "chat", name: "Chat Interface", icon: "💬", prompt: "A chat interface with message bubbles, typing indicators, timestamps, and emoji picker", category: "Communication" },
   ];
 
+  // Add a message to log, keeping recent 16 entries
   const addLog = (msg) => setLog(prev => [...prev.slice(-16), `${new Date().toLocaleTimeString()}: ${msg}`]);
+
+  // Display code snippet either in edit or selected app
   const displayCode = editCode || selectedApp?.code || "";
 
-  // Tag management functions
+  // Add a new tag if not empty and not already present
   const addTag = () => {
     const trimmedTag = tagInput.trim();
     if (trimmedTag && !tags.includes(trimmedTag)) {
@@ -82,34 +87,36 @@ export default function App() {
     }
   };
 
+  // Remove a tag from the tags list
   const removeTag = (tagToRemove) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  // Toggle tag filter selection for filtering apps
   const toggleTagFilter = (tag) => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
-  // Get all unique tags from apps
+  // Get all unique tags from all apps
   const getAllTags = () => {
     const allTags = apps.flatMap(app => app.tags || []);
     return [...new Set(allTags)].sort();
   };
 
-  // Get unique categories from templates
+  // Get unique categories from templates for filtering
   const getCategories = () => {
     const categories = [...new Set(templates.map(t => t.category))];
     return ["All", ...categories.sort()];
   };
 
-  // Filter templates by active category
+  // Filter templates by selected category
   const filteredTemplates = activeCategory === "All"
     ? templates
     : templates.filter(t => t.category === activeCategory);
 
-  // Filter and sort apps
+  // Filter and sort apps based on various states like favorites, search, tags, and sorting order
   const filteredApps = apps
     .filter(app => {
       if (filterFavorites && !app.favorite) return false;
@@ -134,7 +141,7 @@ export default function App() {
       return 0;
     });
 
-  // App analytics
+  // Prepare analytics data from apps and versions
   const analytics = {
     totalApps: apps.length,
     totalVersions: versions.filter(v => selectedApp && v.appId === selectedApp._id).length,
@@ -144,6 +151,7 @@ export default function App() {
     avgCodeSize: apps.length ? Math.round(apps.reduce((sum, a) => sum + (a.code?.length || 0), 0) / apps.length) : 0
   };
 
+  // On component mount: load Puter SDK, authenticate user, and fetch models
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://js.puter.com/v2/";
@@ -157,7 +165,8 @@ export default function App() {
       }
     };
     document.body.appendChild(script);
-    
+
+    // Fetch available models from Puter AI API and parse providers
     fetch("https://api.puter.com/puterai/chat/models/")
       .then(r => r.json())
       .then(data => {
@@ -177,15 +186,18 @@ export default function App() {
         setModels(list);
       })
       .catch(() => {});
-   }, []);
+  }, []);
 
-   useEffect(() => {
-     localStorage.setItem('darkMode', JSON.stringify(darkMode));
-   }, [darkMode]);
+  // Save dark mode preference in localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
+  // Compute filtered list of models by selected provider
   const providers = ["All", ...new Set(models.map(m => m.provider))].sort();
   const filtered = provider === "All" ? models : models.filter(m => m.provider === provider);
 
+  // User sign in function using Puter auth
   async function signIn() {
     if (!puter) return;
     await puter.auth.signIn();
@@ -194,34 +206,36 @@ export default function App() {
     addLog(`Welcome ${u.username}`);
   }
 
+  // Basic HTML validation to ensure required tags and declaration exist
   function validateHTML(code) {
     const errors = [];
     if (!code.toLowerCase().includes("<!doctype html>")) {
-      errors.push("Missing DOCTYPE declaration. HTML must start with &lt;!DOCTYPE html&gt;");
+      errors.push("Missing DOCTYPE declaration. HTML must start with <!DOCTYPE html>");
     }
     if (!/<html[^>]*>/i.test(code)) {
-      errors.push("Missing &lt;html&gt; opening tag");
+      errors.push("Missing <html> opening tag");
     }
     if (!/<\/html>/i.test(code)) {
-      errors.push("Missing &lt;/html&gt; closing tag");
+      errors.push("Missing </html> closing tag");
     }
     if (!/<head[^>]*>/i.test(code)) {
-      errors.push("Missing &lt;head&gt; opening tag");
+      errors.push("Missing <head> opening tag");
     }
     if (!/<\/head>/i.test(code)) {
-      errors.push("Missing &lt;/head&gt; closing tag");
+      errors.push("Missing </head> closing tag");
     }
     if (!/<body[^>]*>/i.test(code)) {
-      errors.push("Missing &lt;body&gt; opening tag");
+      errors.push("Missing <body> opening tag");
     }
     if (!/<\/body>/i.test(code)) {
-      errors.push("Missing &lt;/body&gt; closing tag");
+      errors.push("Missing </body> closing tag");
     }
     if (errors.length > 0) {
       throw new Error("HTML Validation Failed:\n" + errors.join("\n"));
     }
   }
 
+  // Build, deploy, and register a new app using prompt and user input
   async function buildAndDeploy(customPrompt) {
     const finalPrompt = customPrompt || prompt;
     if (!finalPrompt.trim() || !puter || !user) return;
@@ -230,11 +244,12 @@ export default function App() {
     setEditCode("");
     setLog([]);
     setShowTemplates(false);
-    
+
     try {
       addLog(`Model: ${model}`);
       addLog("Generating code...");
 
+      // Define system prompt rules for AI code generation
       const systemPrompt = `You are an expert web developer. Create a COMPLETE single HTML file app.
 RULES:
 - Start with <!DOCTYPE html>
@@ -245,11 +260,13 @@ RULES:
 - NO external dependencies
 - Return ONLY HTML code`;
 
+      // Call Puter AI chat for code generation
       const res = await puter.ai.chat([
         { role: "system", content: systemPrompt },
         { role: "user", content: `Build: ${finalPrompt}` }
       ], { model });
 
+      // Clean up the generated code string, remove markdown formatting
       let code = res?.message?.content || res?.text || res?.content || String(res);
       code = code.replace(/```html?\n?/gi, "").replace(/```\n?/g, "").trim();
       const start = code.search(/<!doctype\s+html>/i);
@@ -257,23 +274,26 @@ RULES:
       validateHTML(code);
 
       addLog(`Generated ${code.length} bytes`);
-      
+
+      // Create a directory and write generated code
       addLog("Creating directory...");
       const dirName = `app_${Date.now()}`;
       await puter.fs.mkdir(dirName);
       await puter.fs.write(`${dirName}/index.html`, code);
       addLog(`Wrote to ${dirName}/index.html`);
 
+      // Create hosted site with subdomain
       addLog("Creating hosted site...");
       const subdomain = appName.trim().toLowerCase().replace(/[^a-z0-9-]/g, "") || puter.randName();
       const site = await puter.hosting.create(subdomain, dirName);
       const hostedUrl = `https://${site.subdomain}.puter.site`;
       addLog(`Hosted at: ${hostedUrl}`);
 
+      // Register the app in Puter apps with fallback for name conflicts
       addLog("Registering Puter app...");
       const finalAppName = appName.trim() || puter.randName();
       const finalAppTitle = appTitle.trim() || finalPrompt.slice(0, 50);
-      
+
       let puterApp;
       try {
         puterApp = await puter.apps.create({
@@ -298,6 +318,7 @@ RULES:
         addLog(`App registered: ${puterApp.name}`);
       }
 
+      // Save app details in database
       addLog("Saving to database...");
       const doc = await database.put({
         type: "app",
@@ -317,7 +338,7 @@ RULES:
         version: 1
       });
 
-      // Save initial version
+      // Save initial version entry for version history
       await database.put({
         type: "version",
         appId: doc.id,
@@ -327,6 +348,7 @@ RULES:
         note: "Initial version"
       });
 
+      // Reload app from database and reset UI states
       const saved = await database.get(doc.id);
       setSelectedApp(saved);
       setAppName("");
@@ -343,13 +365,14 @@ RULES:
     setGenerating(false);
   }
 
+  // Update an existing app with new edited code and redeploy
   async function updateAndRedeploy() {
     if (!selectedApp || !editCode || !puter) return;
     setGenerating(true);
     try {
       addLog("Updating...");
 
-      // Cleanup old directory
+      // Cleanup old directory in Puter filesystem
       if (selectedApp.dir) {
         addLog("Cleaning up old directory...");
         try {
@@ -360,14 +383,17 @@ RULES:
         }
       }
 
+      // Create new directory and write updated code
       const dirName = `app_${Date.now()}`;
       await puter.fs.mkdir(dirName);
       await puter.fs.write(`${dirName}/index.html`, editCode);
-      
+
+      // Delete old hosting and create new hosted site
       try { await puter.hosting.delete(selectedApp.subdomain); } catch (e) {}
       const site = await puter.hosting.create(selectedApp.subdomain, dirName);
       const hostedUrl = `https://${site.subdomain}.puter.site`;
-      
+
+      // Update Puter app with new hosted URL
       if (selectedApp.appName) {
         try {
           await puter.apps.update(selectedApp.appName, { indexURL: hostedUrl });
@@ -375,9 +401,8 @@ RULES:
         } catch (e) {}
       }
 
+      // Increment version and save to version history in database
       const newVersion = (selectedApp.version || 1) + 1;
-      
-      // Save version history
       await database.put({
         type: "version",
         appId: selectedApp._id,
@@ -386,7 +411,8 @@ RULES:
         createdAt: Date.now(),
         note: `Version ${newVersion}`
       });
-      
+
+      // Update app document with new version and data
       await database.put({
         ...selectedApp,
         code: editCode,
@@ -396,7 +422,7 @@ RULES:
         version: newVersion,
         tags: tags
       });
-      
+
       const updated = await database.get(selectedApp._id);
       setSelectedApp(updated);
       setEditCode("");
@@ -408,11 +434,12 @@ RULES:
     setGenerating(false);
   }
 
+  // Delete an app from Puter platform and database with cleanup
   async function deleteApp(app, e) {
     e?.stopPropagation();
     try {
       addLog(`Deleting ${app.appName || app.subdomain}...`);
-      // Cleanup directory
+      // Remove directory from filesystem
       if (app.dir) {
         try {
           await puter.fs.rmdir(app.dir);
@@ -427,15 +454,16 @@ RULES:
       if (app.subdomain) {
         try { await puter.hosting.delete(app.subdomain); } catch (e) {}
       }
-      // Delete versions
+      // Delete all versions from database
       const appVersions = versions.filter(v => v.appId === app._id);
       for (const v of appVersions) {
         await database.del(v._id);
       }
+      // Delete app document itself
       await database.del(app._id);
-      if (selectedApp?._id === app._id) { 
-        setSelectedApp(null); 
-        setEditCode(""); 
+      if (selectedApp?._id === app._id) {
+        setSelectedApp(null);
+        setEditCode("");
       }
       addLog("✅ Deleted");
     } catch (e) {
@@ -443,6 +471,7 @@ RULES:
     }
   }
 
+  // Bulk delete selected apps
   async function bulkDelete() {
     if (selectedApps.size === 0) return;
     for (const appId of selectedApps) {
@@ -453,6 +482,7 @@ RULES:
     setBulkMode(false);
   }
 
+  // Toggle favorite flag for an app
   async function toggleFavorite(app, e) {
     e?.stopPropagation();
     await database.put({ ...app, favorite: !app.favorite });
@@ -461,10 +491,12 @@ RULES:
     }
   }
 
+  // Increment app views count in database
   async function incrementViews(app) {
     await database.put({ ...app, views: (app.views || 0) + 1 });
   }
 
+  // Launch an app via puter.apps.launch or open hosted URL in new tab
   async function launchApp(app, e) {
     e?.stopPropagation();
     await incrementViews(app);
@@ -480,6 +512,7 @@ RULES:
     }
   }
 
+  // Restore a previous version of selected app's code
   async function restoreVersion(version) {
     if (!selectedApp) return;
     setEditCode(version.code);
@@ -487,6 +520,7 @@ RULES:
     setShowVersions(false);
   }
 
+  // Export all apps to JSON file and download
   function exportApps() {
     const data = JSON.stringify(apps, null, 2);
     const blob = new Blob([data], { type: "application/json" });
@@ -500,6 +534,7 @@ RULES:
     setShowExportModal(false);
   }
 
+  // Export one app to JSON file and download
   function exportSingleApp(app) {
     const data = JSON.stringify(app, null, 2);
     const blob = new Blob([data], { type: "application/json" });
@@ -512,6 +547,7 @@ RULES:
     addLog(`✅ Exported ${app.appName}`);
   }
 
+  // Import apps from uploaded JSON file and save to database
   async function importApps(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -533,6 +569,7 @@ RULES:
     setShowExportModal(false);
   }
 
+  // Generate shareable link encoding app data in URL
   function generateShareLink(app) {
     const encoded = btoa(JSON.stringify({ 
       prompt: app.prompt, 
@@ -544,11 +581,13 @@ RULES:
     setShowShareModal(true);
   }
 
+  // Copy share link to clipboard
   function copyShareLink() {
     navigator.clipboard.writeText(shareLink);
     addLog("✅ Link copied!");
   }
 
+  // Select a template to pre-fill prompt and app title
   function selectTemplate(template) {
     setSelectedTemplate(template);
     setPrompt(template.prompt);
@@ -557,9 +596,10 @@ RULES:
     setActiveCategory("All"); // Reset to All when a template is selected
   }
 
+  // Filter versions for selected app and sort newest first
   const appVersions = selectedApp ? versions.filter(v => v.appId === selectedApp._id).sort((a, b) => b.version - a.version) : [];
 
-  // Neomorphic styles
+  // Neomorphic styles for light and dark themes with button variants
   const lightNeu = "bg-[#e8e8e8] shadow-[8px_8px_16px_#c5c5c5,-8px_-8px_16px_#ffffff]";
   const lightNeuInset = "bg-[#e8e8e8] shadow-[inset_4px_4px_8px_#c5c5c5,inset_-4px_-4px_8px_#ffffff]";
   const lightNeuBtn = "bg-[#e8e8e8] shadow-[5px_5px_10px_#c5c5c5,-5px_-5px_10px_#ffffff] hover:shadow-[2px_2px_5px_#c5c5c5,-2px_-2px_5px_#ffffff] active:shadow-[inset_4px_4px_8px_#c5c5c5,inset_-4px_-4px_8px_#ffffff] transition-all duration-150";
@@ -572,6 +612,7 @@ RULES:
   const darkNeuBtnRed = "bg-[#dc2626] text-white shadow-[5px_5px_10px_#1a1a1a,-5px_-5px_10px_#3a3a3a] hover:shadow-[2px_2px_5px_#1a1a1a,-2px_-2px_5px_#3a3a3a] active:shadow-[inset_4px_4px_8px_#b91c1c,inset_-4px_-4px_8px_#ef4444] transition-all duration-150";
   const darkNeuBtnBlack = "bg-[#1a1a1a] text-white shadow-[5px_5px_10px_#1a1a1a,-5px_-5px_10px_#3a3a3a] hover:shadow-[2px_2px_5px_#1a1a1a,-2px_-2px_5px_#3a3a3a] active:shadow-[inset_4px_4px_8px_#000,inset_-4px_-4px_8px_#333] transition-all duration-150";
 
+  // Use theme values for current dark mode state
   const neu = darkMode ? darkNeu : lightNeu;
   const neuInset = darkMode ? darkNeuInset : lightNeuInset;
   const neuBtn = darkMode ? darkNeuBtn : lightNeuBtn;
@@ -583,11 +624,12 @@ RULES:
   const textSecondary = darkMode ? "text-[#cccccc]" : "text-[#666]";
   const textMuted = darkMode ? "text-[#888]" : "text-[#888]";
 
+  // Render the React component with UI including header, build tab, apps list, modals, and preview
   return (
     <div className={`min-h-screen ${bgMain} p-4 md:p-6 transition-colors duration-300`}>
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Header */}
+       {/* Header */}
         <div className={`${neu} rounded-[24px] p-5`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
