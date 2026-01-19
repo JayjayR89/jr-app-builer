@@ -1,0 +1,174 @@
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+#container {
+  width:  100%;
+  height: 100vh;
+}
+
+/* Neomorphic Light Styles */
+.neu-light {
+  background-color: #e8e8e8;
+  box-shadow: 8px 8px 16px #c5c5c5, -8px -8px 16px #ffffff;
+}
+
+. neu-light-inset {
+  background-color:  #e8e8e8;
+  box-shadow: inset 4px 4px 8px #c5c5c5, inset -4px -4px 8px #ffffff;
+}
+
+. neu-light-btn {
+  background-color: #e8e8e8;
+  box-shadow: 5px 5px 10px #c5c5c5, -5px -5px 10px #ffffff;
+  transition: all 0.2s ease;
+}
+
+.neu-light-btn:hover {
+  box-shadow: 2px 2px 5px #c5c5c5, -2px -2px 5px #ffffff;
+}
+
+. neu-light-btn:active {
+  box-shadow: inset 4px 4px 8px #c5c5c5, inset -4px -4px 8px #ffffff;
+}
+
+. neu-light-btn-red {
+  background-color: #dc2626;
+  color: white;
+  box-shadow: 5px 5px 10px #c5c5c5, -5px -5px 10px #ffffff;
+  transition: all 0.2s ease;
+}
+
+.neu-light-btn-red:hover {
+  box-shadow: 2px 2px 5px #c5c5c5, -2px -2px 5px #ffffff;
+}
+
+.neu-light-btn-red:active {
+  box-shadow: inset 4px 4px 8px #b91c1c, inset -4px -4px 8px #ef4444;
+}
+
+. neu-light-btn-black {
+  background-color: #1a1a1a;
+  color: white;
+  box-shadow: 5px 5px 10px #c5c5c5, -5px -5px 10px #ffffff;
+  transition: all 0.2s ease;
+}
+
+. neu-light-btn-black: hover {
+  box-shadow:  2px 2px 5px #c5c5c5, -2px -2px 5px #ffffff;
+}
+
+.neu-light-btn-black:active {
+  box-shadow: inset 4px 4px 8px #000000, inset -4px -4px 8px #333333;
+}
+
+/* Neomorphic Dark Styles */
+. neu-dark {
+  background-color: #2a2a2a;
+  box-shadow: 8px 8px 16px #1a1a1a, -8px -8px 16px #3a3a3a;
+}
+
+.neu-dark-inset {
+  background-color: #2a2a2a;
+  box-shadow: inset 4px 4px 8px #1a1a1a, inset -4px -4px 8px #3a3a3a;
+}
+
+.neu-dark-btn {
+  background-color: #2a2a2a;
+  box-shadow: 5px 5px 10px #1a1a1a, -5px -5px 10px #3a3a3a;
+  transition: all 0.2s ease;
+}
+
+.neu-dark-btn:hover {
+  box-shadow: 2px 2px 5px #1a1a1a, -2px -2px 5px #3a3a3a;
+}
+
+.neu-dark-btn:active {
+  box-shadow: inset 4px 4px 8px #1a1a1a, inset -4px -4px 8px #3a3a3a;
+}
+
+.neu-dark-btn-red {
+  background-color: #dc2626;
+  color: white;
+  box-shadow: 5px 5px 10px #1a1a1a, -5px -5px 10px #3a3a3a;
+  transition: all 0.2s ease;
+}
+
+. neu-dark-btn-red: hover {
+  box-shadow:  2px 2px 5px #1a1a1a, -2px -2px 5px #3a3a3a;
+}
+
+.neu-dark-btn-red:active {
+  box-shadow: inset 4px 4px 8px #b91c1c, inset -4px -4px 8px #ef4444;
+}
+
+.neu-dark-btn-black {
+  background-color: #1a1a1a;
+  color: white;
+  box-shadow: 5px 5px 10px #1a1a1a, -5px -5px 10px #3a3a3a;
+  transition: all 0.2s ease;
+}
+
+.neu-dark-btn-black:hover {
+  box-shadow: 2px 2px 5px #1a1a1a, -2px -2px 5px #3a3a3a;
+}
+
+.neu-dark-btn-black:active {
+  box-shadow: inset 4px 4px 8px #000000, inset -4px -4px 8px #333333;
+}
+
+/* Light Mode Colors */
+.bg-light-main {
+  background-color: #e8e8e8;
+  transition: background-color 0.3s ease;
+}
+
+.text-light-primary {
+  color: #1a1a1a;
+}
+
+.text-light-secondary {
+  color: #666666;
+}
+
+.text-light-muted {
+  color: #888888;
+}
+
+/* Dark Mode Colors */
+.bg-dark-main {
+  background-color: #1a1a1a;
+  transition: background-color 0.3s ease;
+}
+
+. text-dark-primary {
+  color: #e8e8e8;
+}
+
+.text-dark-secondary {
+  color: #cccccc;
+}
+
+.text-dark-muted {
+  color: #888888;
+}
+
+/* Accent Color */
+.accent-red {
+  color: #dc2626;
+}
+
+/* Utility Classes */
+.disabled-opacity {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transition-smooth {
+  transition: all 0.3s ease;
+}
